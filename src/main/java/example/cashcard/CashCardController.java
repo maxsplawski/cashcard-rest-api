@@ -16,6 +16,11 @@ public class CashCardController {
         this.cashCardRepository = cashCardRepository;
     }
 
+    @GetMapping
+    private ResponseEntity<Iterable<CashCard>> findAll() {
+        return ResponseEntity.ok(this.cashCardRepository.findAll());
+    }
+
     @GetMapping("/{id}")
     private ResponseEntity<CashCard> findById(@PathVariable Long id) {
         Optional<CashCard> optionalCashCard = this.cashCardRepository.findById(id);
