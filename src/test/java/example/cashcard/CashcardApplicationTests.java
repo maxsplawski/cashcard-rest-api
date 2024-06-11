@@ -71,7 +71,7 @@ class CashcardApplicationTests {
 
 	@Test
 	public void returnsAListOfAllCashCards() {
-		ResponseEntity<String> response = this.restTemplate.getForEntity("/cashcards?page=1&size=1", String.class);
+		ResponseEntity<String> response = this.restTemplate.getForEntity("/cashcards?page=0&size=1&sort=amount,desc", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -80,11 +80,23 @@ class CashcardApplicationTests {
 		int cashCardsListLength = documentContext.read("$.length()");
 		assertThat(cashCardsListLength).isEqualTo(1);
 
-//		List<Number> ids = documentContext.read("$..id");
-//		assertThat(ids).containsExactlyInAnyOrder(99, 100, 101);
-//
-//		List<Number> amounts = documentContext.read("$..amount");
-//		assertThat(amounts).containsExactlyInAnyOrder(123.45, 1.0, 150.00);
+		double amount = documentContext.read("$[0].amount");
+		assertThat(amount).isEqualTo(150.00);
+	}
+
+	@Test
+	public void returnsAListOfAllCashCardsWithNoParametersAndUsesDefaultValues() {
+		ResponseEntity<String> response = this.restTemplate.getForEntity("/cashcards", String.class);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+		DocumentContext documentContext = JsonPath.parse(response.getBody());
+
+		int cashCardsListLength = documentContext.read("$.length()");
+		assertThat(cashCardsListLength).isEqualTo(3);
+
+		List<Double> amounts = documentContext.read("$..amount");
+		assertThat(amounts).containsExactly(1.00, 123.45, 150.00);
 	}
 
 	@Test
