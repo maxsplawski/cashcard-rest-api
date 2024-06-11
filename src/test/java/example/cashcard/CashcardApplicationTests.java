@@ -2,7 +2,6 @@ package example.cashcard;
 
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
-import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +48,7 @@ class CashcardApplicationTests {
 	@Test
 	@DirtiesContext
 	public void createsACashCard() {
-		CashCard cashCard = new CashCard(null, 250.00);
+		CashCard cashCard = new CashCard(null, 250.00, "sarah1");
 		ResponseEntity<Void> response = this.restTemplate.postForEntity("/cashcards", cashCard, Void.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
