@@ -22,8 +22,34 @@ class CashcardApplicationTests {
 	private TestRestTemplate restTemplate;
 
 	@Test
+	void doesNotReturnACashCardWhenUsingInvalidCredentials() {
+		ResponseEntity<String> response = restTemplate
+				.withBasicAuth("BAD-USER", "abc123")
+				.getForEntity("/cashcards/99", String.class);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+
+		response = restTemplate
+				.withBasicAuth("sarah1", "BAD-PASSWORD")
+				.getForEntity("/cashcards/99", String.class);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+	}
+
+	@Test
+	void rejectsUsersWhoAreNotCardOwners() {
+		ResponseEntity<String> response = restTemplate
+				.withBasicAuth("hank-owns-no-cards", "qrs456")
+				.getForEntity("/cashcards/99", String.class);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+	}
+
+	@Test
 	public void doesNotReturnACashCardWithUnknownId() {
-		ResponseEntity<String> response = this.restTemplate.getForEntity("/cashcards/1000", String.class);
+		ResponseEntity<String> response = this.restTemplate
+				.withBasicAuth("sarah1", "abc123")
+				.getForEntity("/cashcards/1000", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(response.getBody()).isBlank();
@@ -31,7 +57,9 @@ class CashcardApplicationTests {
 
 	@Test
 	public void returnsACashCard() {
-		ResponseEntity<String> response = this.restTemplate.getForEntity("/cashcards/99", String.class);
+		ResponseEntity<String> response = this.restTemplate
+				.withBasicAuth("sarah1", "abc123")
+				.getForEntity("/cashcards/99", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -49,12 +77,16 @@ class CashcardApplicationTests {
 	@DirtiesContext
 	public void createsACashCard() {
 		CashCard cashCard = new CashCard(null, 250.00, "sarah1");
-		ResponseEntity<Void> response = this.restTemplate.postForEntity("/cashcards", cashCard, Void.class);
+		ResponseEntity<Void> response = this.restTemplate
+				.withBasicAuth("sarah1", "abc123")
+				.postForEntity("/cashcards", cashCard, Void.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		URI cashCardLocation = response.getHeaders().getLocation();
-		ResponseEntity<String> getResponse = this.restTemplate.getForEntity(cashCardLocation, String.class);
+		ResponseEntity<String> getResponse = this.restTemplate
+				.withBasicAuth("sarah1", "abc123")
+				.getForEntity(cashCardLocation, String.class);
 
 		assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -70,7 +102,9 @@ class CashcardApplicationTests {
 
 	@Test
 	public void returnsAListOfAllCashCards() {
-		ResponseEntity<String> response = this.restTemplate.getForEntity("/cashcards?page=0&size=1&sort=amount,desc", String.class);
+		ResponseEntity<String> response = this.restTemplate
+				.withBasicAuth("sarah1", "abc123")
+				.getForEntity("/cashcards?page=0&size=1&sort=amount,desc", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
@@ -85,7 +119,9 @@ class CashcardApplicationTests {
 
 	@Test
 	public void returnsAListOfAllCashCardsWithNoParametersAndUsesDefaultValues() {
-		ResponseEntity<String> response = this.restTemplate.getForEntity("/cashcards", String.class);
+		ResponseEntity<String> response = this.restTemplate
+				.withBasicAuth("sarah1", "abc123")
+				.getForEntity("/cashcards", String.class);
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
