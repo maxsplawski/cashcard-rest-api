@@ -26,13 +26,11 @@ class CashcardApplicationTests {
 		ResponseEntity<String> response = restTemplate
 				.withBasicAuth("BAD-USER", "abc123")
 				.getForEntity("/cashcards/99", String.class);
-
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
 		response = restTemplate
 				.withBasicAuth("sarah1", "BAD-PASSWORD")
 				.getForEntity("/cashcards/99", String.class);
-
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 	}
 
@@ -41,7 +39,6 @@ class CashcardApplicationTests {
 		ResponseEntity<String> response = restTemplate
 				.withBasicAuth("hank-owns-no-cards", "qrs456")
 				.getForEntity("/cashcards/99", String.class);
-
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
 	}
 
@@ -50,7 +47,6 @@ class CashcardApplicationTests {
 		ResponseEntity<String> response = this.restTemplate
 				.withBasicAuth("sarah1", "abc123")
 				.getForEntity("/cashcards/1000", String.class);
-
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 		assertThat(response.getBody()).isBlank();
 	}
@@ -60,17 +56,17 @@ class CashcardApplicationTests {
 		ResponseEntity<String> response = this.restTemplate
 				.withBasicAuth("sarah1", "abc123")
 				.getForEntity("/cashcards/99", String.class);
-
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
 		DocumentContext documentContext = JsonPath.parse(response.getBody());
 		Number id = documentContext.read("$.id");
-
 		assertThat(id).isEqualTo(99);
 
 		Number amount = documentContext.read("$.amount");
-
 		assertThat(amount).isEqualTo(123.45);
+
+		String owner = documentContext.read("$.owner");
+		assertThat(owner).isEqualTo("sarah1");
 	}
 
 	@Test
@@ -80,7 +76,6 @@ class CashcardApplicationTests {
 		ResponseEntity<Void> response = this.restTemplate
 				.withBasicAuth("sarah1", "abc123")
 				.postForEntity("/cashcards", cashCard, Void.class);
-
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
 		URI cashCardLocation = response.getHeaders().getLocation();
@@ -92,12 +87,13 @@ class CashcardApplicationTests {
 
 		DocumentContext documentContext = JsonPath.parse(getResponse.getBody());
 		Number id = documentContext.read("$.id");
-
 		assertThat(id).isNotNull();
 
 		Number amount = documentContext.read("$.amount");
-
 		assertThat(amount).isEqualTo(250.00);
+
+		String owner = documentContext.read("$.owner");
+		assertThat(owner).isEqualTo("sarah1");
 	}
 
 	@Test
@@ -105,11 +101,9 @@ class CashcardApplicationTests {
 		ResponseEntity<String> response = this.restTemplate
 				.withBasicAuth("sarah1", "abc123")
 				.getForEntity("/cashcards?page=0&size=1&sort=amount,desc", String.class);
-
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
 		DocumentContext documentContext = JsonPath.parse(response.getBody());
-
 		int cashCardsListLength = documentContext.read("$.length()");
 		assertThat(cashCardsListLength).isEqualTo(1);
 
@@ -122,16 +116,17 @@ class CashcardApplicationTests {
 		ResponseEntity<String> response = this.restTemplate
 				.withBasicAuth("sarah1", "abc123")
 				.getForEntity("/cashcards", String.class);
-
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
 		DocumentContext documentContext = JsonPath.parse(response.getBody());
-
 		int cashCardsListLength = documentContext.read("$.length()");
 		assertThat(cashCardsListLength).isEqualTo(3);
 
 		List<Double> amounts = documentContext.read("$..amount");
 		assertThat(amounts).containsExactly(1.00, 123.45, 150.00);
+
+		List<String> owners = documentContext.read("$..owner");
+		assertThat(owners).containsExactly("sarah1", "sarah1", "sarah1");
 	}
 
 	@Test
