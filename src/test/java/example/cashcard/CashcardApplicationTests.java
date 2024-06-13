@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -127,6 +129,23 @@ class CashcardApplicationTests {
 
 		List<String> owners = documentContext.read("$..owner");
 		assertThat(owners).containsExactly("sarah1", "sarah1", "sarah1");
+	}
+
+	@Test
+	public void updatesAnExistingCashCard() {
+		CashCard cashCard = new CashCard(null, 19.00, null);
+		HttpEntity<CashCard> request = new HttpEntity<>(cashCard);
+		ResponseEntity<Void> response = this.restTemplate
+				.withBasicAuth("sarah1", "abc123")
+				.exchange("/cashcards/99", HttpMethod.PUT, request, Void.class);
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+		DocumentContext documentContext = JsonPath.parse(response.getBody());
+		Number id = documentContext.read("$.id");
+		assertThat(id).isEqualTo(99);
+
+		Number amount = documentContext.read("$.amount");
+		assertThat(amount).isEqualTo(19.00);
 	}
 
 	@Test

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,5 +54,18 @@ public class CashCardController {
                 .toUri();
 
         return ResponseEntity.created(cashCardLocation).build();
+    }
+
+    @PutMapping("/{id}")
+    private ResponseEntity<Void> updateCashCard(
+            @PathVariable Long id,
+            @RequestBody CashCard updateCashCard,
+            Principal principal
+    ) {
+        CashCard cashCard = this.cashCardRepository.findByIdAndOwner(id, principal.getName());
+        CashCard updatedCashCard = new CashCard(cashCard.id(), updateCashCard.amount(), principal.getName());
+        this.cashCardRepository.save(updatedCashCard);
+
+        return ResponseEntity.noContent().build();
     }
 }
