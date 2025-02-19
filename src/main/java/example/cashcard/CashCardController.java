@@ -41,7 +41,6 @@ public class CashCardController {
             Principal principal
     ) {
         Optional<CashCard> optionalCashCard = this.cashCardRepository.findByIdAndOwner(id, principal.getName());
-
         return optionalCashCard.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
