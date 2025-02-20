@@ -69,7 +69,6 @@ public class CashCardController {
         if (cashCard.isPresent()) {
             CashCard updatedCashCard = new CashCard(cashCard.get().id(), updateCashCard.amount(), principal.getName());
             this.cashCardRepository.save(updatedCashCard);
-
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
