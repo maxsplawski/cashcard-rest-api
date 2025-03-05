@@ -83,7 +83,6 @@ public class CashCardController {
         Optional<CashCard> cashCard = this.cashCardRepository.findByIdAndOwner(id, principal.getName());
         if (cashCard.isPresent()) {
             this.cashCardRepository.delete(cashCard.get());
-
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
